@@ -1,3 +1,4 @@
 https://www.youtube.com/watch?v=IydkqseK6oQ
 https://github.com/hassanyf/Simple-Server-and-Chat-Program
 http://www.linuxhowtos.org/C_C++/socket.htm
+http://www.bogotobogo.com/cplusplus/sockets_server_client.php
