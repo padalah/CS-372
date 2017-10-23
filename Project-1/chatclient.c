@@ -23,6 +23,8 @@ needs to be terminated with a CTRL+C.
 #include <netinet/in.h>
 #include <netdb.h>
 
+
+
 // creates file descriptor, portnumber variable and
 // variable to hold returned value from read() ad write()
 int sockfd, portno, n;
@@ -45,11 +47,15 @@ char handle[11];
 // controls while loop
 int d = 1;
 
+
+
 // displays message about error and aborts program
 void error(const char *msg) {
     perror(msg);
     exit(0);
 }
+
+
 
 // makes the initial connection to the server
 void InitialConnection(char *hn,int pn) {
@@ -90,6 +96,8 @@ void InitialConnection(char *hn,int pn) {
         error("ERROR connecting");
     }
 }
+
+
 
 // gets the users message and sends it to the server
 void SendMessage() {
@@ -149,6 +157,8 @@ void SendMessage() {
     }
 }
 
+
+
 // receives the server's message and displays it to the user
 void ReceiveMessage() {
     // clear the message array
@@ -181,6 +191,8 @@ void ReceiveMessage() {
         printf("%s\n",message);
     }
 }
+
+
 
 // main program that talks back and forth the the server
 int main(int argc, char *argv[]) {

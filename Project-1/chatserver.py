@@ -15,9 +15,13 @@ enters "quit", it will close the clients connection and end the program. The ser
 needs to be terminated with a CTRL+C.
 '''
 
+
+
 import socket
 import os
 import sys
+
+
 
 # This function checks if the user input the correct amount of arguments
 # It will exit if they entered the wrong amount
@@ -26,6 +30,8 @@ def CheckArgCount():
     if len(sys.argv) < 2:
         print "Expected format => python" + " " + sys.argv[0] + " " + "port"
         sys.exit()
+
+
 
 # This function starts up the server and returns the server variable
 def StartUp():
@@ -39,9 +45,13 @@ def StartUp():
     s.listen(1)
     return s 
 
+
+
 # This function receives a message from the client and returns it
 def ReceiveMessage(c):
     return c.recv(500)
+
+
 
 # This function sends a message to the client and returns it
 def SendMessage(c):
@@ -50,10 +60,14 @@ def SendMessage(c):
     c.send("doug: " + fromUser)
     return fromUser
 
+
+
 # Calls the function to the check the number of arguments
 CheckArgCount()
 # Calls the function to start up the server and stores the variable
 server = StartUp()
+
+
 
 # loops until the user types CTRL + C (SIGINT) to end the program
 while 1:
