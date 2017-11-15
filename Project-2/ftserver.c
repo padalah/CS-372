@@ -50,67 +50,6 @@ void validate_arguments(int arg_count, char *port_number) {
 
 }
 
-int startup_a_server(int port_number) {
-    int sockfd;
-
-    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-        return -1;
-    }
-
-    struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port_number);
-    server.sin_addr.s_addr = INADDR_ANY;
-
-    int optval = 1;
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
-
-    if(bind(sockfd, (struct sockaddr *) &server, sizeof(server)) < 0){
-        error("ERROR: unable to bind");
-    }
-
-    if(listen(sockfd, 10) < 0){
-        error("ERROR: unable to listen");
-    }
-
-    return sockfd;
-}
-
-void send_message_to_client(int sock, char* buffer) {
-    ssize_t n;
-    size_t size = strlen(buffer) + 1;
-    size_t total = 0;
-
-    while (total < size) {
-        n = write(sock, buffer, size - total);
-
-        total += n;
-
-        if (n < 0) {
-            error("ERROR: unable to send a message");
-        }
-
-        else if (n == 0) {
-            total = size - total;
-        }
-    }
-}
-
-void receive_message_from_client(int sock, char* buffer, size_t size) {
-    char temp_buffer[size + 1];
-    ssize_t n;
-    size_t total = 0;
-
-    while (total < size) {
-        n = read(sock, temp_buffer + total, size - total);
-        total += n;
-        if (n < 0){
-            error("ERROR: unable to receive a message");
-        }
-    }
-    strncpy(buffer, temp_buffer, size);
-}
-
 int get_directory_contents(char* path[]) {
     DIR *d;
     struct dirent *dir;
@@ -166,15 +105,24 @@ char* get_file_contents(char* file_name) {
     return source;
 }
 
-int receive_number_from_client(int sock) {
-    int numb;
-    ssize_t n = 0;
-    n = read(sock, &numb, sizeof(int));
+void send_message_to_client(int sock, char* buffer) {
+    ssize_t n;
+    size_t size = strlen(buffer) + 1;
+    size_t total = 0;
 
-    if (n < 0) {
-        error("ERROR: unable to receive number from client");
+    while (total < size) {
+        n = write(sock, buffer, size - total);
+
+        total += n;
+
+        if (n < 0) {
+            error("ERROR: unable to send a message");
+        }
+
+        else if (n == 0) {
+            total = size - total;
+        }
     }
-    return numb;
 }
 
 void send_number_to_client(int sock, int numb) {
@@ -184,6 +132,40 @@ void send_number_to_client(int sock, int numb) {
     if (n < 0) {
         error("ERROR: unable to send number to client");
     }
+}
+
+void send_file_to_client(int sock, char* file_name) {
+    char* contents_to_send;
+    contents_to_send = get_file_contents(file_name);
+
+    send_number_to_client(sock, strlen(contents_to_send));
+    send_message_to_client(sock, contents_to_send);
+}
+
+void receive_message_from_client(int sock, char* buffer, size_t size) {
+    char temp_buffer[size + 1];
+    ssize_t n;
+    size_t total = 0;
+
+    while (total < size) {
+        n = read(sock, temp_buffer + total, size - total);
+        total += n;
+        if (n < 0){
+            error("ERROR: unable to receive a message");
+        }
+    }
+    strncpy(buffer, temp_buffer, size);
+}
+
+int receive_number_from_client(int sock) {
+    int numb;
+    ssize_t n = 0;
+    n = read(sock, &numb, sizeof(int));
+
+    if (n < 0) {
+        error("ERROR: unable to receive number from client");
+    }
+    return numb;
 }
 
 int handle_request_from_client(int sock, int* data_port_numb) {
@@ -203,12 +185,30 @@ int handle_request_from_client(int sock, int* data_port_numb) {
     return 0;
 }
 
-void send_file_to_client(int sock, char* file_name) {
-    char* contents_to_send;
-    contents_to_send = get_file_contents(file_name);
+int startup_a_server(int port_number) {
+    int sockfd;
 
-    send_number_to_client(sock, strlen(contents_to_send));
-    send_message_to_client(sock, contents_to_send);
+    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+        return -1;
+    }
+
+    struct sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port_number);
+    server.sin_addr.s_addr = INADDR_ANY;
+
+    int optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+
+    if(bind(sockfd, (struct sockaddr *) &server, sizeof(server)) < 0){
+        error("ERROR: unable to bind");
+    }
+
+    if(listen(sockfd, 10) < 0){
+        error("ERROR: unable to listen");
+    }
+
+    return sockfd;
 }
 
 int main(int argc, char *argv[]) {
