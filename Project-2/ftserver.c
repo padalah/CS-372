@@ -16,10 +16,21 @@ void print_argument_format() {
     printf("./ftserver 1024->65535");
 }
 
+void validation_error(char *msg) {
+    perror(msg);
+    print_argument_format();
+    exit(1);
+}
+
+void error(char *msg) {
+    perror(msg);
+    exit(1);
+}
+
 void validate_arguments(int arg_count, char *port_number) {
 
     if (arg_count < 2) {
-        validation_error("ERROR: expected 2 arguments\n");
+        validation_error("ERROR: expected 2 arguments");
     }
 
     char *p;
@@ -28,28 +39,15 @@ void validate_arguments(int arg_count, char *port_number) {
     long conv = strtol(port_number,&p,10);
 
     if (errno != 0 || *p != '\0') {
-        validation_error("ERROR: server port number must be an integer\n");
+        validation_error("ERROR: server port number must be an integer");
     } else {
         pn = conv;
     }
 
     if (pn < 1024 || pn > 65535) {
-        validation_error("ERROR: invalid port number\n");
+        validation_error("ERROR: invalid port number");
     }
 
-}
-
-void validation_error(char *msg) {
-    printf("\e[1;1H\e[2J");
-    perror(msg);
-    print_argument_format();
-    exit(1);
-}
-
-void error(char *msg) {
-    printf("\e[1;1H\e[2J");
-    perror(msg);
-    exit(1);
 }
 
 int startup_a_server(int port_number) {
