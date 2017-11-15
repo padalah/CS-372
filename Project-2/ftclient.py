@@ -43,19 +43,9 @@ def validate_arguments():
         print("ERROR: expected server port number to be in the range [1024, 65535]\n")
         print_argument_format()
         exit(1)
-    elif int(sys.argv[2]) in (30021,30020):
-        os.system('clear')
-        print("ERROR: expected server port number to be in the range [1024, 65535] but not 30021 or 30020\n")
-        print_argument_format()
-        exit(1)
     elif int(sys.argv[-1]) not in range(1024,65536):
         os.system('clear')
         print("ERROR: expected data port number to be in the range [1024, 65535]\n")
-        print_argument_format()
-        exit(1)
-    elif int(sys.argv[-1]) in (30021,30020):
-        os.system('clear')
-        print("ERROR: expected data port number to be in the range [1024, 65535] but not 30021 or 30020\n")
         print_argument_format()
         exit(1)
     elif sys.argv[2] == sys.argv[-1]:

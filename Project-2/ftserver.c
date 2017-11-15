@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
             int data_port_number;
             int newsock;
 
-            printf("Control connection started on port %d.\n", server_port_number);
+            printf("Connection from flip2.\n");
             command = handle_request_from_client(newsockfd, &data_port_number);
 
             if (command == 0) {
@@ -258,6 +258,8 @@ int main(int argc, char *argv[]) {
                     error("ERROR: unable to open data socket");
                 }
                 send_number_to_client(datasockfd, length);
+
+                printf("Sending directory contents to flip2: %d\n", data_port_number);
                 while (path[i] != NULL) {
                     send_message_to_client(datasockfd, path[i]);
                     i++;
@@ -271,10 +273,10 @@ int main(int argc, char *argv[]) {
                 int i = receive_number_from_client(newsockfd);
                 char file_name[255] = "\0";
                 receive_message_from_client(newsockfd, file_name, i);
-                printf("File \"%s\" requested on port %d\n", file_name, data_port_number);
+                printf("File \"%s\" requested on port %d.\n", file_name, data_port_number);
 
                 if (access(file_name, F_OK) == -1) {
-                    printf("File not found. Sending error message on port %d\n", server_port_number);
+                    printf("File not found. Sending error message to flip2: %d\n", server_port_number);
                     char error_message[] = "FILE NOT FOUND";
                     send_number_to_client(newsockfd, strlen(error_message));
                     send_message_to_client(newsockfd, error_message);
@@ -287,7 +289,7 @@ int main(int argc, char *argv[]) {
                     send_number_to_client(newsockfd, strlen(message));
                     send_message_to_client(newsockfd, message);
                 }
-                printf("Sending \"%s\" on port %d\n", file_name, data_port_number);
+                printf("Sending \"%s\" to flip2: %d\n", file_name, data_port_number);
 
                 newsock = startup_a_server(data_port_number);
                 datasockfd = accept(newsock, NULL, NULL);
