@@ -1,3 +1,21 @@
+/*
+Jon-Eric Cook
+CS-372
+Project #2
+This program demonstrates a client server setup. The server is being run with C code 
+and the client is being run with python code. Both use the sockets API to talk to each
+through a TCP connection, both a control connection and also a data connection. The 
+server will be running, waiting for incoming connections. A client will connect to the 
+server and send a command. There are only two options for commands, "-l" or "-g". When 
+the client sends "-l", it is asking the server to send back the contents of the directory
+it is in. When the client sends "-g", followed by a file name, it is asking the server to
+send back that file. The server will then respond with the corresponding information. If
+there is no file, it will send back an error. After a single command from the client, the
+client will close the connection and the program will terminate. The server will continue 
+to wait and listen for another incoming connection. The server needs to be terminated with 
+a CTRL+C.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
