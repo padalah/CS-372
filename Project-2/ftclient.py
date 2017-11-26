@@ -23,6 +23,7 @@ from os import path
 from struct import *
 from time import sleep
 
+# prints the expected argument format
 def print_argument_format():
     print("***** General argument format *****")
     print("python3 ftclient.py <server-host-name> <server-port-number> -l|-g [<file-name>] <data-port-number>\n")
@@ -30,6 +31,7 @@ def print_argument_format():
     print("python3 ftclient.py flip1 1024->65535 -l 1024->65535")
     print("python3 ftclient.py flip1 1024->65535 -g file-name.txt 1024->65535\n")
 
+# assign the arguments to their variables
 def assign_arguments():
     global server_host_name
     global server_port_number
@@ -45,38 +47,46 @@ def assign_arguments():
     else:
         file_name = None
 
+# validates the users input arguments
 def validate_arguments():
+    # checks the number of arguments
     if len(sys.argv) not in (5,6):
         os.system('clear')
-        print("ERROR: xpected 5 or 6 arguments\n")
+        print("ERROR: expected 5 or 6 arguments\n")
         print_argument_format()
         exit(1)
+    # checks the server host name
     elif sys.argv[1] != "flip1":
         os.system('clear')
-        print("ERROR: xpected server host name to be 'flip1'\n")
+        print("ERROR: expected server host name to be 'flip1'\n")
         print_argument_format()
         exit(1)
+    # checks if the port number is in range
     elif int(sys.argv[2]) not in range(1024,65536):
         os.system('clear')
         print("ERROR: expected server port number to be in the range [1024, 65535]\n")
         print_argument_format()
         exit(1)
+    # checks if the data port number is in range
     elif int(sys.argv[-1]) not in range(1024,65536):
         os.system('clear')
         print("ERROR: expected data port number to be in the range [1024, 65535]\n")
         print_argument_format()
         exit(1)
+    # checks if the server and data port numbers are the same
     elif sys.argv[2] == sys.argv[-1]:
         os.system('clear')
         print("ERROR: expected the server and data port numbers to be different\n")
         print_argument_format()
         exit(1)
+    # checks if a valid command was given
     elif sys.argv[3] not in ("-l","-g"):
         os.system('clear')
         print("ERROR: expected command to be either '-l' or '-g'\n")
         print_argument_format()
         exit(1)
 
+# gets the contents of directory
 def get_directory_contents(sock):
     ds = sock.recv(4)
     ds = unpack("I", ds)
@@ -84,6 +94,7 @@ def get_directory_contents(sock):
     for item in rec:
         print(item)
 
+# gets the file from the server
 def get_file_from_server(sock, fn):
     buf = receive_message_from_server(sock)
     if path.isfile(fn):
@@ -91,23 +102,28 @@ def get_file_from_server(sock, fn):
     with open(fn, 'w') as f:
         f.write(buf)
 
+# sends a message to the server
 def send_message_to_server(sock, message):
     output_message = bytes(message, encoding="UTF-8")
     sock.sendall(output_message)
 
+# sends a number to the server
 def send_number_to_server(sock, number):
     output_number = pack('i', number)
     sock.send(output_number)
 
+# sends a request to the server
 def send_request_to_server(sock, cmd, pn):
     send_message_to_server(sock, cmd + "\0")
     send_number_to_server(sock, pn)
 
+# receives a message from the server
 def receive_message_from_server(sock):
     ds = sock.recv(4)
     ds = unpack("I", ds)
     return receive_entire_message_from_server(sock, ds[0])
 
+# receives the entire message from the server
 def receive_entire_message_from_server(sock, n):
     rec = ""
     while len(rec) < n:
@@ -117,35 +133,73 @@ def receive_entire_message_from_server(sock, n):
         rec += packet
     return rec
 
+# makes contact with the server
 def make_contact_with_server(host_name, port_number):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host_name, port_number))
     return sock
 
+# main code of ftclient.py
 if __name__ == '__main__':
+    
+    # validates the input arguments
     validate_arguments()
+
+    # assigns the arguments to their variables
     assign_arguments()
+
+    # makes contact with the server
     server = make_contact_with_server(server_host_name, server_port_number)
+
+    # sends a request to the server
     send_request_to_server(server, command, data_port_number)
+
+    # if the command is "-l"
     if command == "-l":
+        
+        # wait a second
         sleep(1)
+
+        # make contact with the server
         data_sock = make_contact_with_server(server_host_name, data_port_number)
         print("Receiving directory structure from {}: {}".format(sys.argv[1], data_port_number))
+
+        # get the directory contents
         get_directory_contents(data_sock)
+
+        # close the socket
         data_sock.close()
+    
+    # if the comand is "-g"
     if command == "-g":
+        
+        # send the length of the file name
         send_number_to_server(server, len(file_name))
+
+        # send the file name
         send_message_to_server(server, file_name + "\0")
+
+        # get the message from the server
         message_from_server = receive_message_from_server(server)
+
+        # check what is says
         if message_from_server == "FILE NOT FOUND":
             print("{}: {} says {}".format(sys.argv[1], server_port_number, message_from_server))
         elif message_from_server == "FILE FOUND":
             print("Receiving \"{}\" from {}: {}".format(file_name, sys.argv[1], data_port_number))
             sleep(1)
+
+            # make contact with the server
             data_sock = make_contact_with_server(sys.argv[1], data_port_number)
+
+            # get the file
             get_file_from_server(data_sock, file_name)
             print("File transfer complete.")
+
+            # close the socket
             data_sock.close()
+            
+    # close the socket
     server.close()
 
 '''
